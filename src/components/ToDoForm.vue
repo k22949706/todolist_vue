@@ -17,7 +17,7 @@
             class="input__lg"
         />
         <button type="submit" class="btn btn__primary">
-            Add
+            新增
         </button>
     </div>
   </form>
