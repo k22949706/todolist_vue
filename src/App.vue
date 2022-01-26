@@ -1,28 +1,191 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <h1>任務清單</h1>
+    <!-- <to-do-form> listens for:
+        todo-added event emitted by the onSubmit() method inside the ToDoForm component when the form is submitted. 
+        Result: addToDo() method invoked to add new todo item to the ToDoItems array. -->
+    <to-do-form @todo-added="addToDo"></to-do-form>
+    <h2 id="list-summary">{{listSummary}}</h2>
+    
+    <ul aria-labelledby="list-summary" class="stack-large">
+      <li v-for="item in ToDoItems" :key="item.id">
+        <to-do-item :label="item.label" :done="item.done" :id="item.id"
+            @checkbox-changed="updateDoneStatus(item.id)"
+            @item-deleted="deleteToDo(item.id)"
+            @item-edited="editToDo(item.id, $event)">
+        </to-do-item>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import ToDoItem from '/src/components/ToDoItem.vue';
+import uniqueId from 'lodash.uniqueid';
+import ToDoForm from '/src/components/ToDoForm.vue';
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    ToDoItem,
+    ToDoForm
+  },
+  data() {
+    return {
+      ToDoItems: [
+        { id: uniqueId('todo-'), label: '做技術能力測試', done: false },
+        { id: uniqueId('todo-'), label: '建一個To-do list', done: true },
+        { id: uniqueId('todo-'), label: '上傳github', done: true },
+        { id: uniqueId('todo-'), label: '回信給公司', done: false }
+      ]
+    };
+  },
+  methods: {
+    addToDo(toDoLabel) {
+      this.ToDoItems.push({id:uniqueId('todo-'), label: toDoLabel, done: false});
+    },
+    updateDoneStatus(toDoId) {
+      const toDoToUpdate = this.ToDoItems.find(item => item.id === toDoId)
+      toDoToUpdate.done = !toDoToUpdate.done
+    },
+    deleteToDo(toDoId) {
+      const itemIndex = this.ToDoItems.findIndex(item => item.id === toDoId);
+      this.ToDoItems.splice(itemIndex, 1);
+    },
+    editToDo(toDoId, newLabel) {
+      const toDoToEdit = this.ToDoItems.find(item => item.id === toDoId);
+      toDoToEdit.label = newLabel;
+    }
+  },
+  computed: {
+    listSummary() {
+      const numberFinishedItems = this.ToDoItems.filter(item =>item.done).length
+      return `已經完成 ${this.ToDoItems.length} 個中的 ${numberFinishedItems} 個任務`
+    }
   }
 }
 </script>
 
 <style>
+/* Global styles */
+.btn {
+  width: 80px;
+  height: 40px;
+  padding: 0.8rem 1rem 0.7rem;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+.btn__danger {
+  color: #fff;
+  background-color: #ca3c3c;
+  border-color: #bd2130;
+}
+.btn__filter {
+  border-color: lightgrey;
+}
+.btn__danger:focus {
+  outline-color: #c82333;
+}
+.btn__primary {
+  color: #fff;
+  background-color: rgb(96, 39, 252);
+}
+.btn__success {
+  color: #fff;
+  background-color: rgb(77, 123, 25);
+}
+.btn__cancel {
+  color: #fff;
+  background-color: rgb(114, 104, 104);
+}
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+}
+.btn-group > * {
+  flex: 1 1 auto;
+}
+.btn-group > * + * {
+  margin-left: 0.8rem;
+}
+.label-wrapper {
+  margin: 0 0 0 1.5%;
+  flex: 0 0 100%;
+  text-align: start;
+}
+[class*="__lg"] {
+  display: inline-block;
+  width: 80%;
+  height: 40px;
+  font-size: 1.9rem;
+}
+[class*="__lg"]:not(:last-child) {
+  margin-bottom: 1rem;
+}
+.flex{
+  display: flex;  
+  justify-content: space-around;
+}
+@media screen and (min-width: 620px) {
+  [class*="__lg"] {
+    font-size: 2.4rem;
+  }
+}
+.visually-hidden {
+  position: absolute;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+[class*="stack"] > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.stack-small > * + * {
+  margin-top: 1.25rem;
+}
+.stack-large > * + * {
+  margin-top: 2.5rem;
+}
+@media screen and (min-width: 550px) {
+  .stack-small > * + * {
+    margin-top: 1.4rem;
+  }
+  .stack-large > * + * {
+    margin-top: 2.8rem;
+  }
+}
+/* End global styles */
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: #fff;
+  margin: 2rem 0 4rem 0;
+  padding: 1rem;
+  padding-top: 0;
+  position: relative;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 2.5rem 5rem 0 rgba(0, 0, 0, 0.1);
+}
+@media screen and (min-width: 550px) {
+  #app {
+    padding: 4rem;
+  }
+}
+#app > * {
+  max-width: 50rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+#app > form {
+  max-width: 100%;
+}
+#app h1 {
+  display: block;
+  min-width: 100%;
+  width: 100%;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin: 0;
+  margin-bottom: 1rem;
 }
 </style>
